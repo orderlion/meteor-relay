@@ -41,18 +41,18 @@ export function isThenable(possiblePromise: any): possiblePromise is Promise<any
   return possiblePromise && typeof possiblePromise.then === 'function';
 }
 
-export function withCursors<I extends object, T extends Record<string, Mongo.Cursor<any>>>(input: I, cursors: T):
+export async function withCursors<I extends object, T extends Record<string, Mongo.Cursor<any>>>(input: I, cursors: T):
   I & { [K in keyof T]: T[K] extends Mongo.Cursor<infer X> ? X[] : never } {
   let hasUpdate = false;
   let updateInput = () => { hasUpdate = true };
   let handles: Meteor.LiveQueryHandle[] = [];
   let docs: {
     [K in keyof T]: T[K] extends Mongo.Cursor<infer X> ? X[] : never
-  } = Object.entries(cursors).reduce((result: any, [name, cursor]) => {
+  } = await Object.entries(cursors).reduce(async (result: any, [name, cursor]) => {
     result[name] = [];
     let initialAdd = true;
 
-    let handle = cursor.observe({
+    let handle = await cursor.observeAsync({
       addedAt(document, index) {
         result[name].splice(index, 0, document);
         if (!initialAdd) {
@@ -130,14 +130,14 @@ export function createReactiveCursorPublisher(sub: Subscription) {
 
     // TODO: check if the cursors changed. If a cursor is the same, we could
     // reuse the old handle
-    cursors.forEach(cursor => {
+    cursors.forEach(async cursor => {
       let coll = (cursor as any)._cursorDescription.collectionName;
 
       let previousData = previouslyPublished[coll] || new Map();
       delete previouslyPublished[coll];
       let data = publishedData[coll] = new Map();
 
-      let handle = cursor.observeChanges({
+      let handle = await cursor.observeChangesAsync({
         added(id, fields) {
           if (previousData.has(id)) {
             // Some fields might no longer be part of the new cursor

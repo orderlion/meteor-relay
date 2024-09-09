@@ -193,16 +193,16 @@ export const stubMethod = createMethod({
 export const Numbers = new Mongo.Collection('numbers');
 export const Selected = new Mongo.Collection('selected');
 
-Numbers.remove({});
-Selected.remove({});
+await Numbers.remove({});
+await Selected.remove({});
 
 for(let i = 0; i < 100; i++) {
-  Numbers.insert({ num: i });
+  await Numbers.insertAsync({ num: i });
 }
 
 let events = [];
 
-export function recordEvent(text) {
+export function recordEvent(text) {run
   events.push(text);
 }
 
@@ -221,8 +221,8 @@ export const getEvents = createMethod({
 export const addSelected = createMethod({
   name: 'addSelected',
   schema: z.number(),
-  run(num) {
-    return Selected.insert({
+  async run(num) {
+    return await Selected.insertAsync({
       _id: num.toString(),
       num
     });
@@ -232,8 +232,8 @@ export const addSelected = createMethod({
 export const removeSelected = createMethod({
   name: 'removeSelected',
   schema: z.string(),
-  run(id) {
-    return Selected.remove({
+  async run(id) {
+    return await Selected.removeAsync({
       _id: id
     });
   }
@@ -242,8 +242,8 @@ export const removeSelected = createMethod({
 export const updateSelected = createMethod({
   name: 'updateSelected',
   schema: z.object({ id: z.string(), num: z.number() }),
-  run({ id, num }) {
-    return Selected.update(
+  async run({ id, num }) {
+    return await Selected.updateAsync(
       { _id: id },
       { $set: { num } }
     );
