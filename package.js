@@ -11,7 +11,7 @@ Package.describe({
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom(['2.8.2', '3.0-rc.4']);
+  api.versionsFrom(['2.8.2', '3.0']);
   api.use('typescript');
   api.use('ddp-rate-limiter');
   api.use('zodern:types@1.0.9');
